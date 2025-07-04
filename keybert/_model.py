@@ -74,6 +74,7 @@ class KeyBERT:
         keyphrase_ngram_range: Tuple[int, int] = (1, 1),
         stop_words: Union[str, List[str]] = "english",
         top_n: int = 5,
+        postprocess=None,  # new argument
         min_df: int = 1,
         use_maxsum: bool = False,
         use_mmr: bool = False,
@@ -277,7 +278,16 @@ class KeyBERT:
                 candidate_keywords=candidate_keywords,
                 threshold=threshold,
             )
-            return keywords
+            return keywords  
+        # Apply post-processing if provided
+        if postprocess is not None:
+            if not all_keywords:
+                return all_keywords
+            if isinstance(all_keywords[0], list):  # Multiple documents
+                all_keywords = [postprocess(kws) for kws in all_keywords]
+            else:  # Single document
+                all_keywords = postprocess(all_keywords)
+
         return all_keywords
 
     def extract_embeddings(
